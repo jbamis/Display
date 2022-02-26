@@ -1,5 +1,10 @@
-/* Display  1602A-1   C++
-
+/* Display  1602A-1   C++  wiringPi
+* Combining code from David Turnoff and Zhengnan Lee.
+* sudo apt-get install wiringPi
+* sudo apt-get install -y i2c-tools
+* sudo raspi-config
+* i2cdetect -y 1
+* 
 */
 
 
