@@ -1,20 +1,31 @@
-/* Display  1602A-1   C++  wiringPi
-* Combining code from David Turnoff and Zhengnan Lee.
+/* Display- RasberryPi  1602A-1   C++  wiringPi
+* 
+* Combining code from David Turnoff (Youtube) and Zhengnan Lee (GitHub).
+* 
+* Install -
 * sudo apt-get install wiringPi
 * sudo apt-get install -y i2c-tools
 * sudo raspi-config
 * i2cdetect -y 1
+*
+* 
+* Display - (4 Bytes)
+* P0a - RS                      P0b - RS
+* P1a - W/R                     P1b - W/R
+* P2a - Enable(1 then 0)        P2b - Enable(1 then 0)
+* P3a - Backlight               P3b - Backlight  
+* P4a - CMND4 or D4             P4b - CMND0 or D0
+* P5a - CMND5 or D5             P5b - CMND1 or D1
+* P6a - CMND6 or D6             P6b - CMND2 or D2
+* P7a - CMND7 or D7             P7b - CMND3 or D3
 * 
 */
-
-
 
 #include <wiringPiI2C.h>
 #include <wiringPi.h>
 #include <unistd.h>
 #include <iostream>
 #include <string>
-
 
 using namespace std;
 
@@ -23,7 +34,6 @@ using namespace std;
 #define LCD_CMND 0
 #define LCD_CHAR 1
 
-
 class I2C
 {
 public:
@@ -31,15 +41,13 @@ public:
 	~I2C();
 	int initialize(int fd);
 	int rawTimedWrite(int data, int cmdOrChar);
-	int positionCursor(char line, char column);
+	void positionCursor(char line, char column);
 	int writeStringToLCD(int stringToDisplay);
 
 private:
 	int returnid;
 	int fd;
 };
-
-
 
 I2C::I2C()
 {
@@ -51,28 +59,35 @@ I2C::~I2C()
 
 }
 
-
 int I2C::initialize(int fd_init)
 {
 	fd = fd_init;
-	delay(15);
-	rawTimedWrite(0X33, LCD_CMND);
-	delayMicroseconds(4200);
-	rawTimedWrite(0X32, LCD_CMND);
-	delayMicroseconds(4200);
-	rawTimedWrite(0X28, LCD_CMND);
-	delayMicroseconds(4200);
-	rawTimedWrite(0X0C, LCD_CMND);
-	delayMicroseconds(4200);
-	rawTimedWrite(0X01, LCD_CMND);
-	delayMicroseconds(4200);
-	rawTimedWrite(0X00, LCD_CMND);
+	returnid = rawTimedWrite(0X33, LCD_CMND);	// Must initialize to 8-line mode at first
+	if (returnid == -1) return(returnid);
 	delayMicroseconds(4200);
 
+	returnid = rawTimedWrite(0X32, LCD_CMND);	// Then initialize to 4-line mode
+	if (returnid == -1) return(returnid);
+	delayMicroseconds(4200);
+
+	returnid = rawTimedWrite(0X28, LCD_CMND);	 // 2 Lines & 5*7 dots
+	if (returnid == -1) return(returnid);
+	delayMicroseconds(4200);
+
+	returnid = rawTimedWrite(0X0C, LCD_CMND);	 // Enable display without cursor
+	if (returnid == -1) return(returnid);
+	delayMicroseconds(4200);
+
+	returnid = rawTimedWrite(0X01, LCD_CMND);	 // Clear Screen
+	if (returnid == -1) return(returnid);
+	delayMicroseconds(4200);
+
+	returnid = rawTimedWrite(0X00, LCD_CMND);	if (returnid != -1) return(returnid);
+	delayMicroseconds(4200);
 	return(returnid);
 }
 
-int I2C::positionCursor(char line, char column)
+void I2C::positionCursor(char line, char column)
 {
 	char clearLine = line & 1;
 	char cleanColumn = column & 0X0f;
@@ -84,52 +99,59 @@ int I2C::rawTimedWrite(int data, int cmndOrChar)
 {
 	int cleanRS = cmndOrChar & 0X01;
 	int buf = data & 0Xf0;
-	wiringPiI2CWrite(fd, buf | LCD_BACKLIGHT | LCD_ENABLED | cleanRS);
+	returnid = wiringPiI2CWrite(fd, buf | LCD_BACKLIGHT | LCD_ENABLED | cleanRS);
+	if (returnid == -1) return(returnid);
 	delay(2);
-	wiringPiI2CWrite(fd, buf | LCD_BACKLIGHT | cleanRS);
+	returnid = wiringPiI2CWrite(fd, buf | LCD_BACKLIGHT | cleanRS);
+	if (returnid == -1) return(returnid);
 	delay(2);
 
 
 	buf = (data & 0X0f) << 4;
-	wiringPiI2CWrite(fd, buf | LCD_BACKLIGHT | LCD_ENABLED | cleanRS);
+	returnid = wiringPiI2CWrite(fd, buf | LCD_BACKLIGHT | LCD_ENABLED | cleanRS);
+	if (returnid == -1) return(returnid);
 	delay(2);
-	wiringPiI2CWrite(fd, buf | LCD_BACKLIGHT | cleanRS);
+	returnid = wiringPiI2CWrite(fd, buf | LCD_BACKLIGHT | cleanRS);
+	if (returnid == -1) return(returnid);
 	delay(2);
 }
 
 int I2C::writeStringToLCD(int data)
 {
-	rawTimedWrite(data, LCD_CHAR);
+	returnid = rawTimedWrite(data, LCD_CHAR);
+	return(returnid);
 }
 
 
 
 int main(void)
 {
-	int fd_init;
+	int fd;						//Devise ID
 	int returnid = 0;
-	int devId = 0X27;
+	int devId = 0X27;			//get from (i2cdetect -y 1)
 	char stringToDisplayLine1[] = { "Hello," };
 	char stringToDisplayLine2[] = { "World!" };
 
 	I2C I2C0;
 
-	fd_init = wiringPiI2CSetup(devId);
-	cout << "Init result: " << fd_init << endl;
+	fd = wiringPiI2CSetup(devId);
+	cout << "Init result: " << fd << endl;
 
-	I2C0.initialize(fd_init);
+	I2C0.initialize(fd);
 	I2C0.positionCursor(0, 5);
 
 	int i;
 	for (i = 0; stringToDisplayLine1[i] != '\0'; i++)
 	{
-		I2C0.writeStringToLCD(stringToDisplayLine1[i]);
+		returnid = I2C0.writeStringToLCD(stringToDisplayLine1[i]);
+		if (returnid == -1) return(-1);
 	}
 
 	I2C0.positionCursor(1, 5);
 
 	for (i = 0; stringToDisplayLine2[i] != '\0'; i++)
 	{
-		I2C0.writeStringToLCD(stringToDisplayLine2[i]);
+		returnid = I2C0.writeStringToLCD(stringToDisplayLine2[i]);
+		if (returnid == -1) return(-1);
 	}
 }
