@@ -126,11 +126,11 @@ int I2C::writeStringToLCD(int data)
 
 int main(void)
 {
-	int fd;						//Devise ID
+	int fd;						//File Descriptor
 	int returnid = 0;
 	int devId = 0X27;			//get from (i2cdetect -y 1)
-	char stringToDisplayLine1[] = { "Hello," };
-	char stringToDisplayLine2[] = { "World!" };
+	char stringToDisplayLine1[] = { "Hi all," };
+	char stringToDisplayLine2[] = { "How are you doing!" };
 
 	I2C I2C0;
 
@@ -147,7 +147,7 @@ int main(void)
 		if (returnid == -1) return(-1);
 	}
 
-	I2C0.positionCursor(1, 5);
+	I2C0.positionCursor(1, 0);
 
 	for (i = 0; stringToDisplayLine2[i] != '\0'; i++)
 	{
