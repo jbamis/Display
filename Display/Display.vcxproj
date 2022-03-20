@@ -74,8 +74,16 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <IncludePath>
+    </IncludePath>
+  </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="I2C1.h" />
+    <ClInclude Include="Pressure.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
