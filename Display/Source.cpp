@@ -50,7 +50,7 @@ void reverse(char str[], int length)
 
 
 // Implementation of itoa()
-char* itoa(int num, char* str, int base)
+char* itoa(long num, char* str)
 {
 	int i = 0;
 	bool isNegative = false;
@@ -65,7 +65,7 @@ char* itoa(int num, char* str, int base)
 
 	// In standard itoa(), negative numbers are handled only with
 	// base 10. Otherwise numbers are considered unsigned.
-	if (num < 0 && base == 10)
+	if (num < 0)
 	{
 		isNegative = true;
 		num = -num;
@@ -74,9 +74,9 @@ char* itoa(int num, char* str, int base)
 	// Process individual digits
 	while (num != 0)
 	{
-		int rem = num % base;
-		str[i++] = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
-		num = num / base;
+		int rem = num % 10;
+		str[i++] = rem + '0';
+		num = num / 10;
 	}
 
 	// If number is negative, append '-'
@@ -102,7 +102,7 @@ int main(void)
 	int UP;
 	int i;
 	const char  stringToDisplayLine1[] = { "Temp = " };
-	const char stringToDisplayLine3[] = { "Pres = " };
+	const char stringToDisplayLine2[] = { "Pres = " };
 
 
 	I2C I2C0;
@@ -121,49 +121,45 @@ int main(void)
 
 	for (;;)
 	{
-//		UT = pres.uncompensated_temp();
-//		Temp = pres.calculate_true_temp(UT);
-//		UP = pres.uncompensated_pres();
-//		Pres = pres.calculate_true_pres(UP);
-		Temp = 67.76;
-		Pres = 29.98;
+		UT = pres.uncompensated_temp();
+		Temp = pres.calculate_true_temp(UT);
+		UP = pres.uncompensated_pres();
+		Pres = pres.calculate_true_pres(UP);
 
 		I2C0.positionCursor(0, 0);
 
-		for (i = 0; stringToDisplayLine1[i] != '\0'; i++)
+		for (i = 0; stringToDisplayLine1[i] != '\0'; i++)		// Temp
 		{
 			I2C0.writeStringToLCD(stringToDisplayLine1[i]);
 		}
 
-		itoa(Temp, buffer, 10);
-		char *T = buffer;
-
-		for (i = 0; *T != '.'; i++)	i > 31;						// Find the "."
-		if (i = 31) return(returnid);
-		*T += 4;
-		for (i = 5; *T; i--)
+		itoa(Temp, buffer);
+		for (i = 0; i < 2; i++)
 		{
-			I2C0.writeStringToLCD(*T);
-			*T =+ 1;
+			I2C0.writeStringToLCD(buffer[i]);
+		}
+		I2C0.writeStringToLCD('.');
+		for (i = 2; i < 4; i++)
+		{
+			I2C0.writeStringToLCD(buffer[i]);
 		}
 
 		I2C0.positionCursor(1, 0);
 
-		for (i = 0; stringToDisplayLine3[i] != '\0'; i++)
+		for (i = 0; stringToDisplayLine2[i] != '\0'; i++)		// Temp
 		{
-			I2C0.writeStringToLCD(stringToDisplayLine3[i]);
+			I2C0.writeStringToLCD(stringToDisplayLine2[i]);
 		}
 
-		itoa(Pres, buffer, 10);
-		char* P = buffer;
-
-		for (i = 0; *P != '.'; i++)	i > 31;						// Find the "."
-		if (i = 31) return(returnid);
-		*P += 4;
-		for (i = 5; *P; i--)
+		itoa(Pres, buffer);
+		for (i = 0; i < 2; i++)
 		{
-			I2C0.writeStringToLCD(*P);
-			*P = +1;
+			I2C0.writeStringToLCD(buffer[i]);
+		}
+		I2C0.writeStringToLCD('.');
+		for (i = 2; i < 4; i++)
+		{
+			I2C0.writeStringToLCD(buffer[i]);
 		}
 
 		delay(1000);

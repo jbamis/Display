@@ -126,7 +126,8 @@ long Pressure::calculate_true_temp(int UT)
 	X2 = MC << 11;
 	X2 = X2 / (X1 + MD);
 	B5 = X1 + X2;
-	Temp = (B5 + 8) >> 4;
+	Temp = (B5 + 8) >> 4;			// Temp in 0.1 degrees C
+	Temp = (Temp + 32) * (50/9);	// Temp in 0.01 degree F
 	return(Temp);
 
 }
@@ -174,7 +175,9 @@ long Pressure::calculate_true_pres(int UP)
 	X1 = (p >> 8) * (p >> 8);
 	X1 = (X1 * 3038) >> 16;
 	X2 = (-7357 * p) >> 16;
-	p = p + ((X1 + X2 + 3791) >> 4);
+	p = p + ((X1 + X2 + 3791) >> 4);		// Pres in Pa
+	p = ((float)p / 0.2953) / 10;			// Pres in inHg
+
 	return(p);
 }
 
