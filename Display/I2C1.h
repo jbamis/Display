@@ -68,7 +68,7 @@ void I2C::positionCursor(char line, char column)
 	char clearLine = line & 1;
 	char cleanColumn = column & 0X0f;
 	int data = (0X80 | (clearLine << 6) | cleanColumn);
-	rawTimedWrite((0X80 | (clearLine << 6) | cleanColumn), LCD_CMND);
+	rawTimedWrite(data, LCD_CMND);
 }
 
 int I2C::rawTimedWrite(int data, int cmndOrChar)

@@ -99,7 +99,7 @@ int main(void)
 	long Temp;
 	long Pres;
 	int UT;
-	int UP;
+	long UP;
 	int i;
 	const char  stringToDisplayLine1[] = { "Temp = " };
 	const char stringToDisplayLine2[] = { "Pres = " };
@@ -109,12 +109,12 @@ int main(void)
 	Pressure pres;
 
 	int fd;						//File Descriptor
-	int devId1 = 0X27;			//get from (i2cdetect -y 1)
+	int devId1 = 0X27;			//get from (i2cdetect -y 1//	fd = wiringPiI2CSetup(devId1);
 	fd = wiringPiI2CSetup(devId1);
 	cout << "Init result 1: " << fd << endl;
 	I2C0.initialize(fd);
 
-	int devId2 = 0X55;
+	int devId2 = 0X77;
 	fd = wiringPiI2CSetup(devId2);
 	cout << "Init result 2: " << fd << endl;
 	pres.initialize(fd);
