@@ -1,3 +1,17 @@
+/* Combining code from David Turnoff(Youtube) and Zhengnan Lee(GitHub).
+*   1602A-1
+*
+* Display - (4 Bytes)
+* P0a - RS                      P0b - RS
+* P1a - W / R                   P1b - W / R
+* P2a - Enable(1 then 0)        P2b - Enable(1 then 0)
+* P3a - Backlight               P3b - Backlight
+* P4a - CMND4 or D4             P4b - CMND0 or D0
+* P5a - CMND5 or D5             P5b - CMND1 or D1
+* P6a - CMND6 or D6             P6b - CMND2 or D2
+* P7a - CMND7 or D7             P7b - CMND3 or D3
+*/
+
 #pragma once
 
 #include <wiringPiI2C.h>
@@ -9,11 +23,11 @@
 #define LCD_CHAR 1
 
 
-class I2C
+class Display
 {
 public:
-	I2C();
-	~I2C();
+	Display();
+	~Display();
 	int initialize(int fd);
 	int rawTimedWrite(int data, int cmdOrChar);
 	void positionCursor(char line, char column);
@@ -24,17 +38,17 @@ private:
 	int fd;
 };
 
-I2C::I2C()
+Display::Display()
 {
 
 }
 
-I2C::~I2C()
+Display::~Display()
 {
 
 }
 
-int I2C::initialize(int fd_init)
+int Display::initialize(int fd_init)
 {
 	fd = fd_init;
 	returnid = rawTimedWrite(0X33, LCD_CMND);	// Must initialize to 8-line mode at first
@@ -63,7 +77,7 @@ int I2C::initialize(int fd_init)
 	return(returnid);
 }
 
-void I2C::positionCursor(char line, char column)
+void Display::positionCursor(char line, char column)
 {
 	char clearLine = line & 1;
 	char cleanColumn = column & 0X0f;
@@ -71,7 +85,7 @@ void I2C::positionCursor(char line, char column)
 	rawTimedWrite(data, LCD_CMND);
 }
 
-int I2C::rawTimedWrite(int data, int cmndOrChar)
+int Display::rawTimedWrite(int data, int cmndOrChar)
 {
 	int cleanRS = cmndOrChar & 0X01;
 	int buf = data & 0Xf0;
@@ -92,7 +106,7 @@ int I2C::rawTimedWrite(int data, int cmndOrChar)
 	delay(2);
 }
 
-int I2C::writeStringToLCD(int data)
+int Display::writeStringToLCD(int data)
 {
 	returnid = rawTimedWrite(data, LCD_CHAR);
 	return(returnid);

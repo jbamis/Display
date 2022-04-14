@@ -82,7 +82,7 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="I2C1.h" />
+    <ClInclude Include="Display.h" />
     <ClInclude Include="Pressure.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">

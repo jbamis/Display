@@ -1,3 +1,7 @@
+/* 
+*  BMP180
+*/
+
 #pragma once
 
 //                Register
@@ -8,37 +12,35 @@
 #define soft		0XE0
 #define id			0XD0
 
-using namespace std;
-
 class Pressure
 {
 public:
 	Pressure();
 	~Pressure();
 	void initialize(int fd_init);
-	int uncompensated_temp();
+	short uncompensated_temp();
 	long calculate_true_temp(int UT);
 	long uncompensated_pres();
 	long calculate_true_pres(int UP);
 
 private:
 	int fd;
-	int reg;
-	int data;
+	short reg;
+	short data;
 
-	int AC1;				//= 408	;
-	int AC2;				//= -72	;
-	int AC3;				//= 14383 ;
-	unsigned int AC4;	//= 32741 ;
-	unsigned int AC5;	//= 32757 ;
-	unsigned int AC6;	//= 23153 ;
-	int	B1;				//= 6190  ;
-	int B2;				//= 4     ;
-	int MB;				//= 32768 ;
-	int MC;				//= -8711 ;
-	int MD;				//= 2868  ;
+	short AC1;				//= 408	;
+	short AC2;				//= -72	;
+	short AC3;				//= 14383 ;
+	unsigned short AC4;		//= 32741 ;
+	unsigned short AC5;		//= 32757 ;
+	unsigned short AC6;		//= 23153 ;
+	short B1;				//= 6190  ;
+	short B2;				//= 4     ;
+	short MB;				//= 32768 ;
+	short MC;				//= -8711 ;
+	short MD;				//= 2868  ;
 
-	int UT;
+	short UT;
 	long UP;
 	long X1;
 	long X2;
@@ -63,7 +65,7 @@ Pressure::~Pressure()
 void Pressure::initialize(int fd_init)
 {
 	fd = fd_init;
-	int data1;
+	short data1;
 
 	reg = 0xaa;
 	data1 = wiringPiI2CReadReg8(fd, reg);
@@ -144,18 +146,18 @@ void Pressure::initialize(int fd_init)
 	MD = data + data1;
 }
 
-int Pressure::uncompensated_temp()
+short Pressure::uncompensated_temp()
 {
-	int data1;
+	short data1;
 	data = 0x2e;
-	reg = 0xf4;
+	reg = ctrl_meas;
 	wiringPiI2CWriteReg8(fd, reg, data);
 	delayMicroseconds(4500);
 
-	reg = 0xf6;
+	reg = out_msb;
 	data1 = wiringPiI2CReadReg8(fd, reg);
 	data1 <<= 8;
-	reg = 0xf7;
+	reg = out_lsb;
 	data = wiringPiI2CReadReg8(fd, reg);
 	UT = data + data1;
 	return(UT);
@@ -171,29 +173,28 @@ long Pressure::calculate_true_temp(int UT)
 	Temp = (B5 + 8) >> 4;			// Temp in 0.1 degrees C
 	Temp = (Temp  * (90/5)) + 3200;	// Temp in 0.01 degree F
 	return(Temp);
-
 }
 
 long Pressure::uncompensated_pres()
 {
 	long data1;
-	unsigned int data2;
+	unsigned short data2;
 	
 	data = 0x34;
-	reg = 0xf4;
+	reg = ctrl_meas;
 	wiringPiI2CWriteReg8(fd, reg, data);
-	delayMicroseconds(4500);
+	delay(77);
 
-	reg = 0xf6;
+	reg = out_msb;
 	data1 = wiringPiI2CReadReg8(fd, reg);
 	data1 <<= 16;
-	reg = 0xf7;
+	reg = out_lsb;
 	data2 = wiringPiI2CReadReg8(fd, reg);
 	data2 <<= 8;
 	UP = data1 + data2;
-	reg = 0xf8;
+	reg = out_xlsb;
 	data1 = wiringPiI2CReadReg8(fd, reg);
-	UP = UP + data1 ;
+	UP = (UP + data1) >> 8 ;
 	return(UP);
 
 }
@@ -223,7 +224,7 @@ long Pressure::calculate_true_pres(int UP)
 	X1 = (X1 * 3038) >> 16;
 	X2 = (-7357 * p) >> 16;
 	p = p + ((X1 + X2 + 3791) >> 4);		// Pres in Pa
-	p = ((float)p / 0.2953) / 10;			// Pres in inHg
+	p = (float)p * 0.02953;					// Pres in inHg
 
 	return(p);
 }
